@@ -3,6 +3,7 @@ import pygame
 from settings_eje import Settings2
 from ship_eje import Ship2
 from bullet_eje import Bullet
+from alien_eje import Alien2
 
 class AlienInvasion2:
     def __init__(self):
@@ -15,6 +16,8 @@ class AlienInvasion2:
         pygame.display.set_caption("Alien Invasion 2")
         self.ship2 = Ship2(self)
         self.bullets = pygame.sprite.Group()
+        self.aliens = pygame.sprite.Group()
+        self._create_fleet()
 
     def run_game(self):
         while True:
@@ -71,11 +74,35 @@ class AlienInvasion2:
             if bullet.rect.left >= self.settings.screen_width:
                 bullet.kill()  # alternativa a self.bullets.remove(bullet)
 
+    def _create_fleet(self):
+        """Create the fleet of aliens"""
+        alien = Alien2(self)
+        alien_width, alien_height = alien.rect.size
+        current_x, current_y = (self.settings.screen_width - 2 * alien_width), alien_height
+
+        while current_y < (self.settings.screen_height - 2 * alien_height):
+            while current_x > (8 * alien_width):
+                self._create_alien(current_x, current_y)
+                current_x -= 2 * alien_width
+
+            #Finished a row, reset x value, and increment y value
+            current_x = (self.settings.screen_width - 2 * alien_height)
+            current_y += 2 * alien_height
+
+    def _create_alien(self, x_position, y_position):
+        """Create an alien and place it in the row"""
+        new_alien = Alien2(self)
+        new_alien.x = x_position
+        new_alien.rect.x = x_position
+        new_alien.rect.y = y_position
+        self.aliens.add(new_alien)
+
     def _update_screen(self):
         self.screen.fill(self.settings.bg_color)
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
         self.ship2.blitme2()
+        self.aliens.draw(self.screen)
         pygame.display.flip()
 
 if __name__=='__main__':
