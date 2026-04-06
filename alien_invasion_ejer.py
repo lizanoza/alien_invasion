@@ -78,15 +78,15 @@ class AlienInvasion2:
         """Create the fleet of aliens"""
         alien = Alien2(self)
         alien_width, alien_height = alien.rect.size
-        current_x, current_y = (self.settings.screen_width - 2 * alien_width), alien_height
+        current_x, current_y = (10 * alien_width), alien_height
 
         while current_y < (self.settings.screen_height - 2 * alien_height):
-            while current_x > (8 * alien_width):
+            while current_x < (self.settings.screen_width - 2 * alien_width):
                 self._create_alien(current_x, current_y)
-                current_x -= 2 * alien_width
+                current_x += 2 * alien_width
 
             #Finished a row, reset x value, and increment y value
-            current_x = (self.settings.screen_width - 2 * alien_height)
+            current_x = 10 * alien_width
             current_y += 2 * alien_height
 
     def _create_alien(self, x_position, y_position):
