@@ -75,6 +75,18 @@ class AlienInvasion2:
             if bullet.rect.left >= self.settings.screen_width:
                 bullet.kill()  # alternativa a self.bullets.remove(bullet)
 
+        self._check_bullets_aliens_collisions()
+
+    def _check_bullets_aliens_collisions(self):
+        """Respond to bullet-alien collisions"""
+        # Remove any aliens and bullets that have collided.
+        collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, True, True)
+
+        if not self.aliens:
+            # Destroy existing bullets and create a new fleet.
+            self.bullets.empty()
+            self._create_fleet()
+
     def _create_fleet(self):
         """Create the fleet of aliens"""
         alien = Alien2(self)
