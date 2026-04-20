@@ -1,11 +1,12 @@
 import sys
-# Del módulo sys vamos a usar herramientas para salir del juego
 import pygame
-# Librería que proporciona todas las herramientas para crear el juego
+from time import sleep
+
 from settings import Settings
 from ship import Ship
 from bullet import Bullet
 from alien import Alien
+from game_stats import GameStats
 
 class AlienInvasion:
     """Overall class to manage game assets and behavior"""
@@ -23,22 +24,28 @@ class AlienInvasion:
         self.screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN) # (0,0) le dice a pygame que use el tamaño del monitor y pygame.FULLSCREEN es una bandera que activa el modo pantalla completa.
         self.settings.screen_width = self.screen.get_rect().width #Guarda el ancho del monitor en settings
         self.settings.screen_height = self.screen.get_rect().height #Guarda el alto del monitor en settings
-        # Establece el título de la ventana que aparece en la barra superior
-        pygame.display.set_caption("Alien Invasion")
+        pygame.display.set_caption("Alien Invasion") # Establece el título de la ventana que aparece en la barra superior
+        self.stats = GameStats(self)#Instancia que guarda las estadísticas
+
         self.ship = Ship(self) # self = ai = ai_game
         self.bullets = pygame.sprite.Group() #Crea un grupo de bullets vacío.
         #Un Group es como una lista inteligente de pygame que permite manejar multiples sprites(balas) a la vez.
         self.aliens = pygame.sprite.Group()
         self._create_fleet() #Crea la flota de aliens, se ejecuta una sola vez con el init
+        #Start alien invasion in an active state
+        self.game_active = True
 
     def run_game(self):
         """Start the main loop for the game"""
         while True:
             """Start the main loop for the game"""
             self._check_events() # Method para revisar eventos
-            self.ship.update() # Actualiza la posición de la nave
-            self._update_bullets() # Actualiza la posición de las balas y las remueve cuando salen de la pantalla
-            self._update_aliens() # Actualiza la posición de los aliens
+
+            if self.game_active:
+                self.ship.update() # Actualiza la posición de la nave
+                self._update_bullets() # Actualiza la posición de las balas y las remueve cuando salen de la pantalla
+                self._update_aliens() # Actualiza la posición de los aliens
+
             self._update_screen() # Method para actualizar imágenes y la pantalla
             self.clock.tick(60) # Reloj que limita el juego a 60 FPS
 
@@ -130,6 +137,14 @@ class AlienInvasion:
         self._check_fleet_edges()
         self.aliens.update()
 
+        #Look for alien-ship collisions.
+        #spritecollideany detecta la primera colisión con un alien
+        if pygame.sprite.spritecollideany(self.ship, self.aliens):
+            self._ship_hit()
+
+        #Look for aliens hitting the bottom of the screen
+        self._check_aliens_bottom()
+
     def _check_fleet_edges(self):
         """Respond appropriately if any aliens have reach an edge"""
         for alien in self.aliens.sprites():
@@ -142,6 +157,32 @@ class AlienInvasion:
         for alien in self.aliens.sprites():
             alien.rect.y += self.settings.fleet_drop_speed
         self.settings.fleet_direction *= -1
+
+    def _ship_hit(self):
+        """Respond to the ship being hit by an alien"""
+        if self.stats.ships_left > 0:
+            #Decrement ships_left
+            self.stats.ships_left -= 1
+
+            #Get rid of any remaining bullets and aliens
+            self.bullets.empty()
+            self.aliens.empty()
+
+            #Create a new fleet and center the ship
+            self._create_fleet()
+            self.ship.center_ship()
+
+            #Pause
+            sleep(0.5)
+        else:
+            self.game_active = False
+
+    def _check_aliens_bottom(self):
+        """Check if any aliens have reached the bottom of the screen"""
+        for alien in self.aliens.sprites():
+            if alien.rect.bottom >= self.settings.screen_height:
+                self._ship_hit()
+                break
 
     def _update_screen(self):
         """Update images on the screen and flip to new screen"""
