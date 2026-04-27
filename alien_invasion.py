@@ -7,6 +7,7 @@ from ship import Ship
 from bullet import Bullet
 from alien import Alien
 from game_stats import GameStats
+from button import Button
 
 class AlienInvasion:
     """Overall class to manage game assets and behavior"""
@@ -32,8 +33,28 @@ class AlienInvasion:
         #Un Group es como una lista inteligente de pygame que permite manejar multiples sprites(balas) a la vez.
         self.aliens = pygame.sprite.Group()
         self._create_fleet() #Crea la flota de aliens, se ejecuta una sola vez con el init
-        #Start alien invasion in an active state
-        self.game_active = True
+        # Make the play button
+        self.play_button = Button(self, "Play")
+        # Make difficulty level buttons
+        self._make_difficulty_buttons()
+        # Start alien invasion in an inactive state
+        self.game_active = False
+
+    def _make_difficulty_buttons(self):
+        """Make buttons that allow player to select difficulty level."""
+        self.easy_button = Button(self, "Easy")
+        self.medium_button = Button(self, "Medium")
+        self.difficult_button = Button(self, "Difficult")
+
+        # Position buttons so they don't all overlap.
+        self.easy_button.rect.top = (self.play_button.rect.top + 1.5 * self.play_button.rect.height)
+        self.easy_button._update_msg_position()
+
+        self.medium_button.rect.top = (self.easy_button.rect.top + 1.5 * self.easy_button.rect.height)
+        self.medium_button._update_msg_position()
+
+        self.difficult_button.rect.top = (self.medium_button.rect.top + 1.5 * self.medium_button.rect.height)
+        self.difficult_button._update_msg_position()
 
     def run_game(self):
         """Start the main loop for the game"""
@@ -62,6 +83,57 @@ class AlienInvasion:
                 self._check_keydown_events(event)
             elif event.type == pygame.KEYUP:
                 self._check_keyup_events(event)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos() #Retorna una tupla con las coordenadas del mouse al hacer clic
+                self._check_play_buttom(mouse_pos)
+                self._check_difficulty_buttons(mouse_pos)
+
+    def _check_play_buttom(self, mouse_pos):
+        """Start a new game when the player clicks play"""
+        # Verifica si mouse_pos está dentro del rect del botón y lo guarda dentro de la variable button_click
+        button_click = self.play_button.rect.collidepoint(mouse_pos)
+        # El juego se reiniciará solo si se hace clic en play y el juego no está activo en ese momento
+        if button_click and not self.game_active:
+            self._start_game()
+
+    def _check_difficulty_buttons(self, mouse_pos):
+        """Set the appropriate difficulty level."""
+        easy_button_clicked = self.easy_button.rect.collidepoint(mouse_pos)
+        medium_button_clicked = self.medium_button.rect.collidepoint(
+            mouse_pos)
+        diff_button_clicked = self.difficult_button.rect.collidepoint(
+            mouse_pos)
+        if easy_button_clicked:
+            self.settings.difficulty_level = 'easy'
+            self.easy_button.set_highlighted_color()
+            self.medium_button.set_base_color()
+            self.difficult_button.set_base_color()
+        elif medium_button_clicked:
+            self.settings.difficulty_level = 'medium'
+            self.easy_button.set_base_color()
+            self.medium_button.set_highlighted_color()
+            self.difficult_button.set_base_color()
+        elif diff_button_clicked:
+            self.settings.difficulty_level = 'difficult'
+            self.easy_button.set_base_color()
+            self.medium_button.set_base_color()
+            self.difficult_button.set_highlighted_color()
+
+    def _start_game(self):
+        """Start a new game."""
+        # Reset the game settings.
+        self.settings.initialize_dynamic_settings()
+        # Reset the game statistics.
+        self.stats.reset_stats()
+        self.game_active = True
+        # Get rid of any remaining aliens and bullets.
+        self.aliens.empty()
+        self.bullets.empty()
+        # Create a new fleet and center the ship.
+        self._create_fleet()
+        self.ship.center_ship()
+        # Hide the mouse cursor.
+        pygame.mouse.set_visible(False)
 
     def _check_keydown_events(self, event):
         if event.key == pygame.K_RIGHT:
@@ -108,6 +180,7 @@ class AlienInvasion:
             # Destroy existing bullets and create a new fleet
             self.bullets.empty()
             self._create_fleet()
+            self.settings.increase_speed()
 
     def _create_fleet(self):
         """Create the fleet of aliens"""
@@ -176,6 +249,8 @@ class AlienInvasion:
             sleep(0.5)
         else:
             self.game_active = False
+            # Make the mouse cursor visible when game is inactive
+            pygame.mouse.set_visible(True)
 
     def _check_aliens_bottom(self):
         """Check if any aliens have reached the bottom of the screen"""
@@ -193,6 +268,14 @@ class AlienInvasion:
             bullet.draw_bullet() #Dibuja cada bala en su posición actual de la pantalla
         self.ship.blitme()  # Dibuja la nave en el centro inferior de la pantalla.
         self.aliens.draw(self.screen) #Al llamar al metodo draw() en un grupo, Pygame dibuja cada elemento del grupo en la posición definida por su atributo rect
+
+        #Draw the play button if the game is inactive
+        if not self.game_active:
+            self.play_button.draw_button()
+            self.easy_button.draw_button()
+            self.medium_button.draw_button()
+            self.difficult_button.draw_button()
+
         pygame.display.flip()  # Actualiza la pantalla una vez en cada iteración del bucle
 
 if __name__=="__main__":
