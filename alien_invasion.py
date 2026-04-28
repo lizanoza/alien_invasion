@@ -7,7 +7,9 @@ from ship import Ship
 from bullet import Bullet
 from alien import Alien
 from game_stats import GameStats
+from scoreboard import Scoreboard
 from button import Button
+
 
 class AlienInvasion:
     """Overall class to manage game assets and behavior"""
@@ -26,7 +28,8 @@ class AlienInvasion:
         self.settings.screen_width = self.screen.get_rect().width #Guarda el ancho del monitor en settings
         self.settings.screen_height = self.screen.get_rect().height #Guarda el alto del monitor en settings
         pygame.display.set_caption("Alien Invasion") # Establece el título de la ventana que aparece en la barra superior
-        self.stats = GameStats(self)#Instancia que guarda las estadísticas
+        self.stats = GameStats(self) #Instancia que guarda las estadísticas
+        self.sb = Scoreboard(self) #Instancia para llevar el marcador
 
         self.ship = Ship(self) # self = ai = ai_game
         self.bullets = pygame.sprite.Group() #Crea un grupo de bullets vacío.
@@ -268,6 +271,7 @@ class AlienInvasion:
             bullet.draw_bullet() #Dibuja cada bala en su posición actual de la pantalla
         self.ship.blitme()  # Dibuja la nave en el centro inferior de la pantalla.
         self.aliens.draw(self.screen) #Al llamar al metodo draw() en un grupo, Pygame dibuja cada elemento del grupo en la posición definida por su atributo rect
+        self.sb.show_score() #Dibuja la información del marcador
 
         #Draw the play button if the game is inactive
         if not self.game_active:
