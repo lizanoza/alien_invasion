@@ -1,6 +1,7 @@
 import sys
 import pygame
 from time import sleep
+from pathlib import Path
 
 from settings import Settings
 from ship import Ship
@@ -81,6 +82,8 @@ class AlienInvasion:
         for event in pygame.event.get():
             # pygame.event.get() devuelve una lista de los eventos ocurridos desde la última vez que se llamó.
             if event.type == pygame.QUIT:  # Si el evento es de tipo QUIT(presionar la x de la ventana).
+                path = Path("alien_invasion_highscore.txt")
+                path.write_text(str(self.stats.high_score))
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 self._check_keydown_events(event)
@@ -150,6 +153,8 @@ class AlienInvasion:
             """Move the ship to the left"""
             self.ship.moving_left = True
         elif event.key == pygame.K_q:
+            path = Path("alien_invasion_highscore.txt")
+            path.write_text(str(self.stats.high_score))
             sys.exit()
         elif event.key == pygame.K_SPACE:
             self._fire_bullet()
@@ -251,8 +256,8 @@ class AlienInvasion:
         """Respond to the ship being hit by an alien"""
         if self.stats.ships_left > 0:
             #Decrement ships_left and update the scoreboard
-            self.stats.ships_left -= 1
-            self.sb.prep_ships()
+            self.stats.ships_left -= 1 #Resta una vida al contador
+            self.sb.prep_ships() #Regenera los iconos de vidas con el nuevo número
 
             #Get rid of any remaining bullets and aliens
             self.bullets.empty()

@@ -67,12 +67,12 @@ class Scoreboard:
 
     def prep_ships(self):
         """Show how many ships are left"""
-        self.ships = Group()
-        for ship_number in range(self.stats.ships_left):
-            ship = Ship(self.ai_game)
-            ship.rect.x = 10 + ship_number * ship.rect.width
+        self.ships = Group() #Crea un grupo vacío de sprites
+        for ship_number in range(self.stats.ships_left): #Itera ships left (3 al inicio)
+            ship = Ship(self.ai_game) #En cada iteración instancia una imagen de ship usada como icono
+            ship.rect.x = 10 + ship_number * ship.rect.width #Los posiciona uno al lado del otro en la esquina superior izquierda, separados por 10px
             ship.rect.y = 10
-            self.ships.add(ship)
+            self.ships.add(ship) #Los agrega al grupo
 
     def show_score(self):
         """Draw score, hig score, level and ships left to the screen"""

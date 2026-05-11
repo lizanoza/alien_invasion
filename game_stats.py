@@ -1,4 +1,4 @@
-
+from pathlib import Path
 
 class GameStats:
     """Track statistics for alien invasion"""
@@ -8,10 +8,12 @@ class GameStats:
         self.reset_stats()
 
         # High score should never be reset
-        self.high_score = 0
+        path = Path("alien_invasion_highscore.txt")
+        contents = path.read_text()
+        self.high_score = int(contents)
 
     def reset_stats(self):
         """Initialize statistics that can change during the game."""
-        self.ships_left = self.settings.ship_limit
+        self.ships_left = self.settings.ship_limit # Guarda cuantas vidas quedan
         self.score = 0
         self.level = 1
